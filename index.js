@@ -1,4 +1,5 @@
 var path = require("path");
+var fs = require("fs");
 var express = require("express");
 var compression = require("compression");
 var app = express();
@@ -22,12 +23,22 @@ router.all("/", function(req, res, next) {
 });
 
 var si = require("systeminformation");
-router.get("/systeminfo", async (req, res) => {  
-  //si.diskLayout(function(data) {
-  si.getStaticData(function(data) {  
+router.get("/:file?", async (req, res) => {
+  if (req.params.file) {
+    let data;
+    try {
+      data = require(`./${req.params.file}.js`); // do stuff
+      res.header("Content-Type", "application/json");
+      res.send(data);
+    } catch (ex) {
+      res.sendStatus(404);
+    }
+  } else {
+    si.getStaticData(function(data) {
       //data = data.reduce((p,c) => p.concat(c.serialNum), []);
-    res.send(data);
-  });
+      res.send(data);
+    });
+  }
 });
 
 app.use(router);
